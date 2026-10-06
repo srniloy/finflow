@@ -74,7 +74,7 @@ public class AccountController {
             @RequestParam BigDecimal amount
     ){
         accountService.creditBalance(accountNumber, amount);
-        return ResponseEntity.ok("Balance credited successfully")
+        return ResponseEntity.ok("Balance credited successfully");
     }
 
 

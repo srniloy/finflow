@@ -114,6 +114,25 @@ public class AccountService {
         log.info("Balance updated. New balance: {}", account.getBalance());
     }
 
+    /**
+     * Credit balance
+     * called by transaction service bia kafka
+     * @param accountNumber
+     * @param amount
+     */
+
+    public void creditBalance(String accountNumber, BigDecimal amount){
+        log.info("Crediting {} to account: {}", amount, accountNumber);
+
+        Account account = accountRepository.findByAccountNumber(accountNumber)
+                .orElseThrow(()-> new RuntimeException("Account not found"));
+
+        account.setBalance(account.getBalance().add(amount));
+        accountRepository.save(account);
+
+        log.info("Balance credited. New balance: {}", account.getBalance());
+    }
+
 
     private String generateAccountNumber(){
         String accountNumber;
