@@ -105,7 +105,7 @@ public class AccountService {
         }
 
         if(account.getBalance().compareTo(amount) < 0){
-            throw new RuntimeException("Insufficiant funds for account "+accountNumber);
+            throw new RuntimeException("Insufficient funds for account "+accountNumber);
         }
 
         account.setBalance(account.getBalance().subtract(amount));
