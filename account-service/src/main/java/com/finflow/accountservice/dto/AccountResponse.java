@@ -2,10 +2,16 @@ package com.finflow.accountservice.dto;
 
 import com.finflow.accountservice.entity.AccountStatus;
 import com.finflow.accountservice.entity.AccountType;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+@Data
+@AllArgsConstructor
+@NoArgsConstructor
 public class AccountResponse {
     private String id;
     private String accountNumber;
@@ -13,7 +19,7 @@ public class AccountResponse {
     private String email;
     private String phone;
     private AccountType accountType;
-    private AccountStatus accountStatus;
+    private AccountStatus status;
     private BigDecimal balance;
     private BigDecimal dailyTransactionLimit;
     private LocalDateTime createdAt;
