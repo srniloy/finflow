@@ -41,7 +41,7 @@ public class Account {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private AccountStatus accountStatus;
+    private AccountStatus status;
 
     @Column(nullable = false, precision = 15, scale = 2)
     private BigDecimal balance;
