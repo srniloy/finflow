@@ -13,8 +13,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Service
 @Slf4j
@@ -76,6 +78,23 @@ public class TransactionService {
 
         return mapToResponse(savedTransaction);
 
+    }
+
+    public TransactionResponse getTransaction(String transactionId){
+        return mapToResponse(transactionRepository
+                .findById(transactionId)
+                .orElseThrow(()-> new RuntimeException(
+                        "Transaction not found: "+transactionId
+                ))
+        );
+    }
+
+    public List<TransactionResponse> getTransactionHistory(String accountNumber){
+        return transactionRepository
+                .findBySenderAccountNumberOrderByCreatedAtDesc(accountNumber)
+                .stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
     }
 
     private TransactionResponse mapToResponse(Transaction transaction){
