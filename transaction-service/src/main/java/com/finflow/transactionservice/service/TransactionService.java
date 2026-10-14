@@ -97,6 +97,19 @@ public class TransactionService {
                 .collect(Collectors.toList());
     }
 
+    public TransactionResponse verifyOTP(
+            String transactionId,
+            String otp
+    ){
+        Transaction result = new Transaction();
+
+        /**
+         * will complete it later once the notification service is done
+         */
+
+        return mapToResponse(result);
+    }
+
     private TransactionResponse mapToResponse(Transaction transaction){
         TransactionResponse response = new TransactionResponse();
         response.setId(transaction.getId());
