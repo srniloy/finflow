@@ -34,7 +34,7 @@ public class TransactionController {
     public ResponseEntity<TransactionResponse> getTransaction(
             @PathVariable String transactionId
     ){
-        return ResponseEntity.ok(TransactionService.getTransaction(transactionId));
+        return ResponseEntity.ok(transactionService.getTransaction(transactionId));
     }
 
     @GetMapping("account/{accountNumber}")
@@ -51,6 +51,6 @@ public class TransactionController {
     ){
         log.info("OTP verification request - transaction: {}", transactionId);
 
-        return ResponseEntity.ok(TransactionService.verifyOTP(transactionId, otp));
+        return ResponseEntity.ok(transactionService.verifyOTP(transactionId, otp));
     }
 }
