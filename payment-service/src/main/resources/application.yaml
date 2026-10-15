@@ -22,7 +22,7 @@ spring:
 server:
   port: 8083
 
-# Razorpay configuretion
+# Razorpay configuration
 
 razorpay:
   key-id: rzp_test_ToG7YOpuCJlABF
