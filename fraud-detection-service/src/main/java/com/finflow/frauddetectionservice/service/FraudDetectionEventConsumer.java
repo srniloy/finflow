@@ -28,7 +28,7 @@ public class FraudDetectionEventConsumer {
         log.info("Reveived transaction for fraud check: {}", payload.get("transactionId"));
 
         try{
-            fraudDetectionService.checkTransaciton(payload);
+            fraudDetectionService.checkTransaction(payload);
 
         } catch (Exception e) {
             throw new RuntimeException(e);
