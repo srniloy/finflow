@@ -5,6 +5,7 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
+import tools.jackson.databind.node.StringNode;
 
 import java.math.BigDecimal;
 
@@ -16,4 +17,10 @@ public interface AccountServiceClient {
             @PathVariable String accountNumber,
             @RequestParam BigDecimal amount
             );
+
+    @GetMapping("/api/v1/accounts/{accountNumber}/credit")
+    String creditBalance(
+            @PathVariable String accountNumber,
+            @RequestParam BigDecimal amount
+    );
 }
