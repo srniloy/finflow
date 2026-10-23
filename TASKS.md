@@ -12,6 +12,8 @@
 - Never start a task whose dependencies are not `done`.
 - After each task: update **Status** below and tick its DoD checkboxes.
 - If a task proves too large mid-way, split it (e.g. `T11a`/`T11b`) and note it.
+- **Branch per task:** branch off `main` as `feature/<name>`, implement, run build/lint, tick Status + DoD, commit with `feat(scope): ...`, then merge back to `main`.
+- **Agent scope:** when asked to complete a task, only implement the code + update Status/DoD. Do **NOT** create/checkout branches or commit — the user does git operations manually using the Branch/Commit lines above.
 
 **Status legend:** `todo` | `doing` | `done` | `blocked`
 
@@ -22,7 +24,7 @@
 | ID  | Task                                | Depends on | Status |
 | --- | ----------------------------------- | ---------- | ------ |
 | T00 | Scaffold workspace                  | —          | done   |
-| T01 | Typed models                        | T00        | todo   |
+| T01 | Typed models                        | T00        | done   |
 | T02 | TokenStorageService + AuthService   | T01        | todo   |
 | T03 | authInterceptor                     | T02        | todo   |
 | T04 | ToastService + errorInterceptor     | T00        | todo   |
@@ -49,6 +51,8 @@
 
 ### T00 — Scaffold workspace
 
+- **Branch:** `main`
+- **Commit:** `chore: initialized the project and setup the environments`
 - **Deliverables:** `ng new` (standalone components, routing, CSS), Angular Material, ESLint + Prettier, `src/environments/environment.ts` + `environment.prod.ts`, feature-first folder skeleton (`core/`, `shared/`, `features/`, `layout/`).
 - **DoD:**
   - [x] `ng serve` renders a running app
@@ -58,14 +62,23 @@
 
 ### T01 — Typed models
 
+- **Branch:** `feature/typed-models`
+- **Commit:** `feat(core): add typed API models and paged response envelope`
 - **Deliverables:** interfaces in `core/models/` — `account`, `transaction`, `payment`, `auth`, `notification` (§1.2). Includes `PagedResponse<T>`.
 - **DoD:**
-  - [ ] All model files compile
-  - [ ] No `any` anywhere in models
-  - [ ] Field names match backend DTOs (see §4 API contract)
+  - [x] All model files compile
+  - [x] No `any` anywhere in models
+  - [x] Field names match backend DTOs (see §4 API contract)
+
+> Note: No backend repo is present locally, so fields were inferred from the spec's
+> feature descriptions and the §4 API contract. Adjust against the real backend DTOs
+> before wiring HTTP calls. `PagedResponse<T>` was placed in its own
+> `paged-response.model.ts` (shared envelope) rather than inside `transaction.model.ts`.
 
 ### T02 — TokenStorageService + AuthService
 
+- **Branch:** `feature/auth-service`
+- **Commit:** `feat(auth): add TokenStorageService and AuthService`
 - **Deliverables:** `TokenStorageService` (sessionStorage), typed `AuthService` with login/register/logout/current-user.
 - **DoD:**
   - [ ] API URLs come from environment, not hardcoded
@@ -74,6 +87,8 @@
 
 ### T03 — authInterceptor
 
+- **Branch:** `feature/auth-interceptor`
+- **Commit:** `feat(core): attach bearer token and handle 401 redirect`
 - **Deliverables:** functional interceptor attaching `Authorization: Bearer <token>`; on `401` clears session and redirects to `/login`.
 - **DoD:**
   - [ ] Token attached to outgoing requests
@@ -82,6 +97,8 @@
 
 ### T04 — ToastService + errorInterceptor
 
+- **Branch:** `feature/error-toast`
+- **Commit:** `feat(core): add ToastService and HTTP error interceptor`
 - **Deliverables:** `ToastService` wrapping `MatSnackBar`; functional error interceptor mapping `400/401/403/404/409/500` to messages; parses `{ timestamp, status, error, message }`.
 - **DoD:**
   - [ ] Errors surface as snackbars
@@ -90,6 +107,8 @@
 
 ### T05 — loadingInterceptor + global spinner
 
+- **Branch:** `feature/loading-spinner`
+- **Commit:** `feat(core): add loading interceptor and global spinner`
 - **Deliverables:** functional interceptor tracking in-flight requests with debounce; global spinner component.
 - **DoD:**
   - [ ] Spinner shows on slow calls, hides when done
@@ -98,6 +117,8 @@
 
 ### T06 — authGuard + noAuthGuard
 
+- **Branch:** `feature/route-guards`
+- **Commit:** `feat(core): add authGuard and noAuthGuard`
 - **Deliverables:** functional `authGuard` (→ `/login`) and `noAuthGuard` (→ `/dashboard`).
 - **DoD:**
   - [ ] Protected routes blocked when unauthenticated
@@ -106,6 +127,8 @@
 
 ### T07 — Routing skeleton + shell + theme
 
+- **Branch:** `feature/routing-shell`
+- **Commit:** `feat(layout): add lazy routing skeleton, shell and CSS theme`
 - **Deliverables:** `app.routes.ts` with lazy `loadChildren`/`loadComponent` for every feature; `layout/` shell (`header`, `sidebar`, `page-container`); CSS variable theme (§3.3); scroll restoration; `withComponentInputBinding`.
 - **DoD:**
   - [ ] All routes navigate; lazy chunks load
@@ -114,6 +137,8 @@
 
 ### T08 — Auth feature
 
+- **Branch:** `feature/auth-pages`
+- **Commit:** `feat(auth): implement login and register forms`
 - **Deliverables:** `login-form` + `register-form` (reactive, validated), `features/auth` routes.
 - **DoD:**
   - [ ] Inline validation on blur/touch
@@ -123,6 +148,8 @@
 
 ### T09 — Dashboard
 
+- **Branch:** `feature/dashboard`
+- **Commit:** `feat(dashboard): add balance card, quick actions and recent activity`
 - **Deliverables:** balance card, quick actions, recent transactions (5–10), mini stats, notifications preview; single `DashboardService` using `forkJoin`.
 - **DoD:**
   - [ ] Skeletons while loading, empty state when no data
@@ -131,6 +158,8 @@
 
 ### T10 — Accounts
 
+- **Branch:** `feature/accounts`
+- **Commit:** `feat(accounts): add account list, detail, create and block/unblock`
 - **Deliverables:** `account-list` (MatTable, search/filter, responsive→card), `account-detail`, `create-account` form, block/unblock with confirm dialog.
 - **DoD:**
   - [ ] Search by account number / holder name
@@ -140,6 +169,8 @@
 
 ### T11 — Transactions: transfer + confirm
 
+- **Branch:** `feature/transfer`
+- **Commit:** `feat(transactions): add transfer form with confirm dialog`
 - **Deliverables:** `transfer` reactive form (sender, receiver, amount, description) + summary confirm dialog; calls `POST /transactions/transfer`.
 - **DoD:**
   - [ ] Amount validator: min > 0, max custom
@@ -149,6 +180,8 @@
 
 ### T12 — OTP verification + polling
 
+- **Branch:** `feature/otp-verification`
+- **Commit:** `feat(transactions): add OTP verification with status polling`
 - **Deliverables:** `otp-verification` component; `POST /transactions/{id}/verify?otp=`; poll/refresh final status.
 - **DoD:**
   - [ ] OTP entry validates length/format
@@ -157,6 +190,8 @@
 
 ### T13 — Transaction history
 
+- **Branch:** `feature/transaction-history`
+- **Commit:** `feat(transactions): add paginated and filterable history`
 - **Deliverables:** paginated + filterable list (date range, type, status); sent **and** received; row click → detail.
 - **DoD:**
   - [ ] Columns: date, counterparty, type badge, amount, status, description
@@ -165,6 +200,8 @@
 
 ### T14 — Transaction detail + timeline
 
+- **Branch:** `feature/transaction-detail`
+- **Commit:** `feat(transactions): add detail view with status timeline and receipt`
 - **Deliverables:** `transaction-detail` with status timeline, fees, reference number, receipt (print/PDF).
 - **DoD:**
   - [ ] Timeline renders PENDING→PROCESSING→COMPLETED/FLAGGED
@@ -172,6 +209,8 @@
 
 ### T15 — Deposit + withdrawal
 
+- **Branch:** `feature/deposit-withdrawal`
+- **Commit:** `feat(transactions): add deposit and withdrawal forms`
 - **Deliverables:** `deposit` and `withdrawal` forms calling new endpoints (§4).
 - **DoD:**
   - [ ] Updated balance shown after success
@@ -179,6 +218,8 @@
 
 ### T16 — Payments (Razorpay)
 
+- **Branch:** `feature/razorpay-payments`
+- **Commit:** `feat(payments): add Razorpay add-money, status and history`
 - **Deliverables:** `add-money`, `payment-status`, `payment-history`; `RazorpayService` wrapping checkout `open()` in a Promise.
 - **DoD:**
   - [ ] Order → checkout → poll `GET /payments/{id}` → result
@@ -188,6 +229,8 @@
 
 ### T17 — Notifications
 
+- **Branch:** `feature/notifications`
+- **Commit:** `feat(notifications): add notification list and header bell`
 - **Deliverables:** `notification-list`, header `notification-bell` with unread count; mark-as-read; filter by type; relative timestamps.
 - **DoD:**
   - [ ] Unread badge count accurate
@@ -196,6 +239,8 @@
 
 ### T18 — Profile + settings
 
+- **Branch:** `feature/profile-settings`
+- **Commit:** `feat(profile): add profile page and settings with change password`
 - **Deliverables:** `profile`, `settings` (change password with match validator, notification prefs), optional `kyc-status`.
 - **DoD:**
   - [ ] Confirm-password match validator
@@ -204,6 +249,8 @@
 
 ### T19 — Polish
 
+- **Branch:** `feature/polish`
+- **Commit:** `feat(ui): responsive pass, accessibility and dark mode toggle`
 - **Deliverables:** responsive pass, accessibility (labels/aria/keyboard/focus), dark/light toggle, spacing scale.
 - **DoD:**
   - [ ] Mobile + desktop layouts verified
@@ -212,6 +259,8 @@
 
 ### T20 — Tests + README
 
+- **Branch:** `feature/tests-readme`
+- **Commit:** `test: cover services, guards and forms; update README`
 - **Deliverables:** unit tests for services/guards/forms (mocked HTTP), README with run instructions + screenshots.
 - **DoD:**
   - [ ] `ng test` green
