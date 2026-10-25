@@ -1,59 +1,40 @@
-# Finflow
+# FinFlow – Banking Frontend (Angular + Tailwind CSS)
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 22.2.3.
+Standalone-component Angular app with lazy-loaded routes, route guards, JWT + error + loading interceptors, reactive forms, toasts and a spinner.
 
-## Development server
-
-To start a local development server, run:
+## Run
 
 ```bash
-ng serve
+npm install
+npm run mock-server   # optional: in-memory API at http://localhost:8080/api
+npm start             # http://localhost:4200
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+If you have a real backend, it must expose the endpoints below at `http://localhost:8080/api`
+(change `src/app/core/config.ts` to point elsewhere) and allow CORS from `http://localhost:4200`.
 
-## Code scaffolding
+## API contract
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+| Method | Endpoint | Payload | Response |
+| --- | --- | --- | --- |
+| POST | /auth/register | `{ name, email, password, phone }` | `{ message, accountId }` |
+| POST | /auth/login | `{ email, password }` | `{ token, userId }` |
+| GET | /accounts/me | – | `{ accountId, balance, accountType }` |
+| POST | /transactions/deposit | `{ amount }` | `{ transactionId, newBalance, status }` |
+| POST | /transactions/withdraw | `{ amount }` | `{ transactionId, newBalance, status }` |
+| POST | /transactions/transfer | `{ toAccountId, amount }` | `{ transactionId, status }` |
+| POST | /transactions/payment | `{ billerId, invoiceNumber, amount }` | `{ transactionId, status }` |
+| GET | /transactions/history | – | `[{ id, type, amount, date, status }]` |
 
-```bash
-ng generate component component-name
+`phone` (register) and `invoiceNumber` (payment) are sent in addition to the fields listed in the original guideline, because the forms require them.
+
+## Structure
+
+```
+src/app/
+  core/       config, models, services, interceptors (jwt, error, loading), guards
+  shared/     layout (sidebar / top bar / mobile nav), spinner, toasts, field-error, validators
+  features/   auth, dashboard, transactions (deposit, withdraw, transfer, payment)
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
-
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+A 401 from any protected endpoint logs the user out and redirects to `/login`.

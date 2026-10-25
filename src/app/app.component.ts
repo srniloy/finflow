@@ -1,12 +1,16 @@
-import { Component, signal } from '@angular/core';
+import { Component } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
+import { SpinnerComponent } from './shared/spinner.component';
+import { ToastContainerComponent } from './shared/toast-container.component';
 
 @Component({
-  imports: [RouterOutlet],
   selector: 'app-root',
-  styleUrl: './app.component.css',
-  templateUrl: './app.component.html',
+  standalone: true,
+  imports: [RouterOutlet, SpinnerComponent, ToastContainerComponent],
+  template: `
+    <router-outlet />
+    <app-spinner />
+    <app-toast-container />
+  `
 })
-export class App {
-  protected readonly title = signal('finflow');
-}
+export class AppComponent {}
