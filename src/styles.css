@@ -1,1 +1,48 @@
-/* You can add global styles to this file, and also import other style files */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :focus-visible {
+    outline: 2px solid #1e3a8a;
+    outline-offset: 2px;
+  }
+  input[type='number']::-webkit-outer-spin-button,
+  input[type='number']::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+  input[type='number'] {
+    -moz-appearance: textfield;
+  }
+}
+
+@layer components {
+  .fin-label {
+    @apply mb-1.5 block text-sm font-semibold text-slate-700;
+  }
+  .fin-input {
+    @apply w-full appearance-none rounded-xl border border-slate-300 bg-white px-4 py-3 leading-tight text-slate-900 placeholder:text-slate-400 focus:border-blue-900 focus:outline-none focus:ring-2 focus:ring-blue-900/20;
+  }
+  .fin-input-error {
+    @apply border-red-500 text-red-500 focus:border-red-500 focus:ring-red-500/20;
+  }
+  .fin-btn {
+    @apply w-full rounded-xl bg-blue-900 px-4 py-3 font-semibold text-white transition hover:bg-blue-800 active:bg-blue-950 disabled:cursor-not-allowed disabled:opacity-50;
+  }
+  .fin-card {
+    @apply rounded-2xl border border-slate-200 bg-white p-6;
+  }
+}
+
+
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
