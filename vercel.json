@@ -1,0 +1,8 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "outputDirectory": "dist/finflow/browser",
+  "rewrites": [
+    { "source": "/api/v1/:path*", "destination": "https://finflow-server.srniloy.com/api/v1/:path*" },
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
