@@ -78,18 +78,27 @@ export class AccountService {
     return this.http
       .get<BackendTransaction[]>(`${API_BASE_URL}/transactions/account/${this.myAccountNumber()}`)
       .pipe(map((list) => {
-        const mapped = list.map((t) => ({
-          id: t.id,
-          // Incoming money is shown as a deposit; otherwise keep the backend type.
-          type: this.mapType(t),
-          amount: t.amount,
-          date: t.createdAt,
-          status: this.mapStatus(t.status),
-          senderAccountNumber: t.senderAccountNumber,
-          receiverAccountNumber: t.receiverAccountNumber,
-          description: t.description ?? undefined,
-          failureReason: t.failureReason ?? undefined
-        }));
+        const mine = this.myAccountNumber();
+        const mapped = list
+          // Incoming transfers only become real "money in" once COMPLETED - while a
+          // transfer is PROCESSING / PENDING_VERIFICATION / FLAGGED the receiver has
+          // not been credited, so hide it from their activity list.
+          .filter((t) =>
+            !(t.type === 'TRANSFER' && t.receiverAccountNumber === mine && t.senderAccountNumber !== mine)
+            || t.status === 'COMPLETED'
+          )
+          .map((t) => ({
+            id: t.id,
+            // Incoming money is shown as a deposit; otherwise keep the backend type.
+            type: this.mapType(t),
+            amount: t.amount,
+            date: t.createdAt,
+            status: this.mapStatus(t.status),
+            senderAccountNumber: t.senderAccountNumber,
+            receiverAccountNumber: t.receiverAccountNumber,
+            description: t.description ?? undefined,
+            failureReason: t.failureReason ?? undefined
+          }));
         this.history.set(mapped);
         return mapped;
       }));
@@ -122,7 +131,8 @@ export class AccountService {
       case 'COMPLETED': return 'SUCCESS';
       case 'FAILED':
       case 'FLAGGED': return 'FAILED';
-      default: return 'PENDING';  // PROCESSING / PENDING / PENDING_VERIFICATION
+      case 'PENDING_VERIFICATION': return 'PENDING_VERIFICATION';
+      default: return 'PENDING';  // PROCESSING / PENDING
     }
   }
 }

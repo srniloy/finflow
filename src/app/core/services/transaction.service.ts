@@ -7,6 +7,7 @@ import {
   PaymentCheckoutInfo,
   PaymentRequest,
   SimpleTransactionResponse,
+  Transaction,
   TransferRequest
 } from '../models/models';
 import { AccountService } from './account.service';
@@ -72,6 +73,64 @@ export class TransactionService {
       );
   }
 
+  /** GET /api/v1/transactions/{transactionId} - status polling. */
+  getTransaction(transactionId: string): Observable<SimpleTransactionResponse> {
+    return this.http
+      .get<{ id: string; status: string }>(
+        `${API_BASE_URL}/transactions/${transactionId}`
+      )
+      .pipe(map((res) => ({ transactionId: res.id, status: mapTransactionStatus(res.status) })));
+  }
+
+  /** GET /api/v1/transactions/{transactionId} - full record (OTP re-entry, detail views). */
+  getTransactionDetail(transactionId: string): Observable<Transaction> {
+    return this.http
+      .get<{
+        id: string;
+        senderAccountNumber: string;
+        receiverAccountNumber: string;
+        amount: number;
+        type: 'DEPOSIT' | 'WITHDRAWAL' | 'TRANSFER' | 'PAYMENT';
+        status: string;
+        description: string | null;
+        failureReason: string | null;
+        createdAt: string;
+        completedAt: string | null;
+        referenceNumber: string | null;
+      }>(`${API_BASE_URL}/transactions/${transactionId}`)
+      .pipe(map((res) => ({
+        id: res.id,
+        type: res.type,
+        amount: Number(res.amount),
+        date: res.createdAt,
+        status: mapTransactionStatus(res.status),
+        senderAccountNumber: res.senderAccountNumber,
+        receiverAccountNumber: res.receiverAccountNumber,
+        description: res.description ?? undefined,
+        failureReason: res.failureReason ?? undefined,
+        completedAt: res.completedAt ?? undefined,
+        referenceNumber: res.referenceNumber ?? undefined
+      })));
+  }
+
+  /** POST /api/v1/transactions/{transactionId}/verify?otp=123456 */
+  verifyOtp(transactionId: string, otp: string): Observable<SimpleTransactionResponse> {
+    return this.http
+      .post<{ id: string; status: string; failureReason?: string }>(
+        `${API_BASE_URL}/transactions/${transactionId}/verify`,
+        null,
+        { params: { otp } }
+      )
+      .pipe(
+        tap(() => this.refreshBalance()),
+        map((res) => ({
+          transactionId: res.id,
+          status: mapTransactionStatus(res.status),
+          failureReason: res.failureReason
+        }))
+      );
+  }
+
   /** POST /api/v1/payments/create-order { accountNumber, amount, description } */
   payment(payload: PaymentRequest): Observable<PaymentCheckoutInfo> {
     return this.http
@@ -109,6 +168,7 @@ function mapTransactionStatus(status: string): SimpleTransactionResponse['status
     case 'COMPLETED': return 'SUCCESS';
     case 'FAILED':
     case 'FLAGGED': return 'FAILED';
-    default: return 'PENDING';
+    case 'PENDING_VERIFICATION': return 'PENDING_VERIFICATION';
+    default: return 'PENDING'; // PROCESSING / PENDING
   }
 }

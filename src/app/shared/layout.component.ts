@@ -112,7 +112,7 @@ export class LayoutComponent {
     { label: 'Deposit', path: '/deposit', icon: 'deposit' },
     { label: 'Withdraw', path: '/withdraw', icon: 'withdraw' },
     { label: 'Transfer', path: '/transfer', icon: 'transfer' },
-    { label: 'Online Payment', path: '/payment', icon: 'payment' }
+    { label: 'Pay Bill', path: '/payment', icon: 'payment' }
   ];
 
   readonly firstName = computed(() => {
