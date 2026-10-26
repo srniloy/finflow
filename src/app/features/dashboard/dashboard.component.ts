@@ -1,6 +1,6 @@
 import { CurrencyPipe, DatePipe } from '@angular/common';
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
 import { errorMessage } from '../../core/interceptors/error.interceptor';
 import { Transaction, TransactionStatus, TransactionType } from '../../core/models/models';
@@ -187,6 +187,15 @@ const STATUS_LABELS: Record<TransactionStatus, string> = {
                 >
                   {{ statusLabel(t) }}
                 </p>
+                @if (t.status === 'PENDING_VERIFICATION' && !isCredit(t)) {
+                  <button
+                    type="button"
+                    class="mt-1.5 rounded-lg bg-amber-500 px-2.5 py-1 text-xs font-semibold text-white transition hover:bg-amber-600"
+                    (click)="verifyTransaction(t, $event)"
+                  >
+                    Enter OTP
+                  </button>
+                }
               </div>
             </li>
           }
@@ -219,9 +228,20 @@ const STATUS_LABELS: Record<TransactionStatus, string> = {
     </section>
   `
 })
-export class DashboardComponent implements OnInit {
+export class DashboardComponent implements OnInit, OnDestroy {
   readonly accounts = inject(AccountService);
   private readonly toast = inject(ToastService);
+  private readonly router = inject(Router);
+
+  /** Quietly re-pulls balance + history so backend changes (e.g. OTP auto-refund) appear without a manual reload. */
+  private autoRefresh: ReturnType<typeof setInterval> | null = null;
+
+  ngOnDestroy(): void {
+    if (this.autoRefresh) {
+      clearInterval(this.autoRefresh);
+      this.autoRefresh = null;
+    }
+  }
 
   readonly page = signal(0);
 
@@ -251,7 +271,7 @@ export class DashboardComponent implements OnInit {
       if (t.status === 'FAILED') {
         continue;
       }
-      if (t.type === 'DEPOSIT' || t.type === 'TRANSFER_IN') {
+      if (t.type === 'DEPOSIT' || t.type === 'TRANSFER_IN' || t.type === 'PAYMENT') {
         moneyIn += t.amount;
       } else {
         moneyOut += t.amount;
@@ -264,11 +284,21 @@ export class DashboardComponent implements OnInit {
     forkJoin([this.accounts.loadAccount(), this.accounts.loadHistory()]).subscribe({
       error: (err: unknown) => this.toast.error(errorMessage(err, 'Could not load your account.'))
     });
+    this.autoRefresh = setInterval(() => {
+      this.accounts.loadAccount().subscribe({ error: () => undefined });
+      this.accounts.loadHistory().subscribe({ error: () => undefined });
+    }, 20_000);
   }
 
-  /** Open the details page for everything except payments (no record in transaction-service yet). */
+  /** All activity rows now have a backend record - payments included. */
   isClickable(t: Transaction): boolean {
-    return t.type !== 'PAYMENT';
+    return true;
+  }
+
+  /** Jump straight to the OTP gate for a transfer awaiting verification (deep-linkable: /transfer?verify={id}). */
+  verifyTransaction(t: Transaction, event: Event): void {
+    event.stopPropagation();
+    void this.router.navigate(['/transfer'], { queryParams: { verify: t.id } });
   }
 
   /** The other account: receiver when you sent money, sender when you received it. */
@@ -277,7 +307,8 @@ export class DashboardComponent implements OnInit {
   }
 
   isCredit(t: Transaction): boolean {
-    return t.type === 'DEPOSIT' || t.type === 'TRANSFER_IN';
+    // card payments via Razorpay are money into the account
+    return t.type === 'DEPOSIT' || t.type === 'TRANSFER_IN' || t.type === 'PAYMENT';
   }
 
   iconFor(t: Transaction): IconName {

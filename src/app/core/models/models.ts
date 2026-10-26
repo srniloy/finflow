@@ -102,6 +102,7 @@ export interface PaymentRequest {
 export interface SimpleTransactionResponse {
   transactionId: string;
   status: TransactionStatus;
+  failureReason?: string;
 }
 
 /** Info needed to open Razorpay Checkout on the client. */

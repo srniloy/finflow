@@ -68,6 +68,30 @@ interface BackendTx {
           </span>
         </section>
 
+        <!-- OTP verification CTA (sender only - the OTP is emailed to the sender) -->
+        @if (txn()?.status === 'PENDING_VERIFICATION' && txn()!.senderAccountNumber === mine()) {
+          <section
+            class="fin-card mt-4 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+            aria-label="OTP verification pending"
+          >
+            <div>
+              <p class="font-semibold text-slate-900">OTP verification required</p>
+              <p class="mt-1 text-sm leading-relaxed text-slate-500">
+                Enter the 6-digit code sent to your registered email to complete this transfer.
+                If the code is not verified in time, the transfer is cancelled and refunded
+                automatically.
+              </p>
+            </div>
+            <a
+              routerLink="/transfer"
+              [queryParams]="{ verify: txn()!.id }"
+              class="fin-btn !w-auto shrink-0 px-6"
+            >
+              Enter OTP
+            </a>
+          </section>
+        }
+
         <!-- Accounts -->
         <section class="fin-card mt-4" aria-label="Accounts involved">
           <dl class="divide-y divide-slate-100">
@@ -148,7 +172,7 @@ export class TransactionDetailComponent implements OnInit {
   private readonly toast = inject(ToastService);
   private readonly auth = inject(AuthService);
 
-  private readonly mine = computed(() => this.auth.currentUser()?.accountNumber ?? '');
+  readonly mine = computed(() => this.auth.currentUser()?.accountNumber ?? '');
 
   ngOnInit(): void {
     this.http.get<BackendTx>(`${API_BASE_URL}/transactions/${this.transactionId()}`).subscribe({
@@ -188,7 +212,8 @@ export class TransactionDetailComponent implements OnInit {
 
   readonly isCredit = computed(() => {
     const t = this.txn();
-    return !!t && (t.type === 'DEPOSIT' || t.type === 'TRANSFER_IN');
+    // card payments via Razorpay are money into the account
+    return !!t && (t.type === 'DEPOSIT' || t.type === 'TRANSFER_IN' || t.type === 'PAYMENT');
   });
 
   readonly failureReason = computed(() => {

@@ -100,8 +100,8 @@ export class LoginComponent {
 
   /** Pre-registered accounts for quick testing. */
   readonly demoAccounts = [
-    { label: 'Account 1', email: 'account1@finflow.com', password: 'Ab@112233' },
-    { label: 'Account 2', email: 'account2@finflow.com', password: 'Ab@112233' }
+    { label: 'Account 1', email: 'srniloy5009@gmail.com', password: 'Ab@112233' },
+    { label: 'Account 2', email: 'niloyas890@gmail.com', password: 'Ab@112233' }
   ];
 
   /** Fills the login form with a demo account. */
